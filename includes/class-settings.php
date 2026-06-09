@@ -25,7 +25,6 @@ final class Settings {
 			'badge_enabled'         => 1,
 			'badge_position'        => 'BOTTOM_RIGHT',
 			'badge_region'          => 'US',
-			'optin_enabled'         => 1,
 			'optin_min_delivery'    => 7,
 			'optin_max_delivery'    => 60,
 			'optin_include_gtins'   => 0,
@@ -74,7 +73,7 @@ final class Settings {
 			'gmr_main',
 			__( 'Merchant configuration', 'gm-reviews' ),
 			function () {
-				echo '<p>' . esc_html__( 'Configure your Google Merchant Reviews integration. The merchant ID is required for both the opt-in survey and the rating badge.', 'gm-reviews' ) . '</p>';
+				echo '<p>' . esc_html__( 'Configure your Google Merchant Reviews integration. The merchant ID is required for both the opt-in survey and the rating badge. The opt-in script is auto-injected on the WooCommerce order-received (thank-you) page automatically.', 'gm-reviews' ) . '</p>';
 			},
 			self::PAGE_SLUG
 		);
@@ -83,7 +82,6 @@ final class Settings {
 		add_settings_field( 'badge_enabled', __( 'Enable rating badge', 'gm-reviews' ), array( $this, 'field_badge_enabled' ), self::PAGE_SLUG, 'gmr_main' );
 		add_settings_field( 'badge_position', __( 'Badge position', 'gm-reviews' ), array( $this, 'field_badge_position' ), self::PAGE_SLUG, 'gmr_main' );
 		add_settings_field( 'badge_region', __( 'Badge region', 'gm-reviews' ), array( $this, 'field_badge_region' ), self::PAGE_SLUG, 'gmr_main' );
-		add_settings_field( 'optin_enabled', __( 'Enable opt-in survey', 'gm-reviews' ), array( $this, 'field_optin_enabled' ), self::PAGE_SLUG, 'gmr_main' );
 		add_settings_field( 'optin_min_delivery', __( 'Min delivery days', 'gm-reviews' ), array( $this, 'field_optin_min_delivery' ), self::PAGE_SLUG, 'gmr_main' );
 		add_settings_field( 'optin_max_delivery', __( 'Max delivery days', 'gm-reviews' ), array( $this, 'field_optin_max_delivery' ), self::PAGE_SLUG, 'gmr_main' );
 		add_settings_field( 'optin_include_gtins', __( 'Include product GTINs', 'gm-reviews' ), array( $this, 'field_optin_include_gtins' ), self::PAGE_SLUG, 'gmr_main' );
@@ -109,7 +107,6 @@ final class Settings {
 		$out['merchant_id'] = isset( $input['merchant_id'] ) ? preg_replace( '/\D+/', '', (string) $input['merchant_id'] ) : '';
 
 		$out['badge_enabled']  = ! empty( $input['badge_enabled'] ) ? 1 : 0;
-		$out['optin_enabled']  = ! empty( $input['optin_enabled'] ) ? 1 : 0;
 		$out['optin_include_gtins'] = ! empty( $input['optin_include_gtins'] ) ? 1 : 0;
 		$out['dev_mode']            = ! empty( $input['dev_mode'] ) ? 1 : 0;
 
@@ -156,7 +153,7 @@ final class Settings {
 			<hr/>
 			<h2><?php esc_html_e( 'Shortcodes', 'gm-reviews' ); ?></h2>
 			<p><code>[gm_reviews_badge]</code> &mdash; <?php esc_html_e( 'Outputs the rating badge in its current page (use the shortcode anywhere you want the badge to appear, e.g. inside Breakdance).', 'gm-reviews' ); ?></p>
-			<p><code>[gm_reviews_optin]</code> &mdash; <?php esc_html_e( 'Outputs the opt-in survey script. Use on a FunnelKit thank-you page or any custom thank-you template. If WooCommerce is active, the opt-in script is also auto-injected on the WC order-received page when enabled.', 'gm-reviews' ); ?></p>
+			<p><code>[gm_reviews_optin]</code> &mdash; <?php esc_html_e( 'Outputs the opt-in survey script. Use on a FunnelKit thank-you page or any custom thank-you template. The opt-in script is also auto-injected on the WooCommerce order-received page.', 'gm-reviews' ); ?></p>
 			<p><code>[gm_reviews_badge dev="1"]</code> &mdash; <?php esc_html_e( 'Force the preview badge for a single shortcode, even if dev mode is disabled globally.', 'gm-reviews' ); ?></p>
 		</div>
 		<?php
@@ -207,16 +204,6 @@ final class Settings {
 			esc_attr( $val )
 		);
 		echo '<p class="description">' . esc_html__( 'Two-letter ISO country code (e.g. US, GB, DE). Leave blank to use the default region.', 'gm-reviews' ) . '</p>';
-	}
-
-	public function field_optin_enabled() {
-		$val = self::get( 'optin_enabled' );
-		printf(
-			'<label><input type="checkbox" name="%1$s[optin_enabled]" value="1" %2$s /> %3$s</label>',
-			esc_attr( self::OPTION_KEY ),
-			checked( 1, $val, false ),
-			esc_html__( 'Auto-inject the opt-in script on the WooCommerce order-received (thank-you) page.', 'gm-reviews' )
-		);
 	}
 
 	public function field_optin_min_delivery() {

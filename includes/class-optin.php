@@ -19,19 +19,16 @@ final class Optin {
 	}
 
 	public function register() {
-		add_action( 'woocommerce_thankyou', array( $this, 'maybe_auto_render' ), 20 );
+		add_action( 'woocommerce_thankyou', array( $this, 'auto_render' ), 20 );
 		add_action( 'woocommerce_order_completed', array( $this, 'store_optin_payload' ) );
 	}
 
-	public function maybe_auto_render( $order_id ) {
-		if ( ! Settings::get( 'optin_enabled' ) ) {
-			return;
-		}
+	public function auto_render( $order_id ) {
 		if ( $this->auto_rendered ) {
 			return;
 		}
 		$this->auto_rendered = true;
-		$this->render( $order_id );
+		echo $this->render( $order_id );
 	}
 
 	public function store_optin_payload( $order_id ) {
@@ -145,5 +142,14 @@ final class Optin {
 		</script>
 		<?php
 		return (string) ob_get_clean();
+	}
+
+	public function is_rendered() {
+		return $this->rendered;
+	}
+
+	public function reset_render_flag() {
+		$this->rendered      = false;
+		$this->auto_rendered = false;
 	}
 }
