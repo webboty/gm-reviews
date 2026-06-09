@@ -87,13 +87,28 @@ final class Badge {
 			$config['region'] = $region;
 		}
 
+		$css = $this->wrapper_position_css( $position );
 		?>
+		<style id="gmr-merchant-widget-position">
+		#google-merchantwidget-iframe-wrapper{<?php echo $css; ?>}
+		</style>
 		<script id="gmr-merchant-widget" src="https://www.gstatic.com/shopping/merchant/merchantwidget.js" defer></script>
 		<script>
 		(function(){
 			var s = document.getElementById('gmr-merchant-widget');
 			if (!s) return;
-			var run = function(){ merchantwidget.start(<?php echo wp_json_encode( $config ); ?>); };
+			var run = function(){
+				merchantwidget.start(<?php echo wp_json_encode( $config ); ?>);
+				var applyPos = function(){
+					var w = document.getElementById('google-merchantwidget-iframe-wrapper');
+					if (w) {
+						w.style.cssText += ';<?php echo esc_attr( $css ); ?>';
+					}
+				};
+				applyPos();
+				setTimeout(applyPos, 200);
+				setTimeout(applyPos, 1000);
+			};
 			if (s.addEventListener) {
 				s.addEventListener('load', run);
 			} else if (s.attachEvent) {
@@ -104,6 +119,22 @@ final class Badge {
 		})();
 		</script>
 		<?php
+	}
+
+	private function wrapper_position_css( $position ) {
+		switch ( $position ) {
+			case 'TOP_LEFT':
+				return 'top:20px !important;left:20px !important;bottom:auto !important;right:auto !important;';
+			case 'TOP_RIGHT':
+				return 'top:20px !important;right:20px !important;bottom:auto !important;left:auto !important;';
+			case 'BOTTOM_LEFT':
+				return 'bottom:20px !important;left:20px !important;top:auto !important;right:auto !important;';
+			case 'INLINE':
+				return '';
+			case 'BOTTOM_RIGHT':
+			default:
+				return 'bottom:20px !important;right:20px !important;top:auto !important;left:auto !important;';
+		}
 	}
 
 	public function print_dev_badge( $position = 'BOTTOM_RIGHT', $args = array() ) {

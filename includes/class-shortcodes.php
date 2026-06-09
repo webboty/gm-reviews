@@ -58,14 +58,30 @@ final class Shortcodes {
 		}
 
 		$id    = 'gmr-merchant-widget-' . wp_generate_uuid4();
+		$css   = self::wrapper_position_css( $position );
 		ob_start();
 		?>
+		<style id="<?php echo esc_attr( $id ); ?>-css">
+		#<?php echo esc_attr( $id ); ?>-wrap{<?php echo $css; ?>}
+		</style>
 		<script id="<?php echo esc_attr( $id ); ?>" src="https://www.gstatic.com/shopping/merchant/merchantwidget.js" defer></script>
 		<script>
 		(function(){
 			var s = document.getElementById(<?php echo wp_json_encode( $id ); ?>);
 			if (!s) return;
-			var run = function(){ merchantwidget.start(<?php echo wp_json_encode( $config ); ?>); };
+			var run = function(){
+				merchantwidget.start(<?php echo wp_json_encode( $config ); ?>);
+				// Apply our position to the wrapper that merchantwidget.js just created
+				var applyPos = function(){
+					var w = document.getElementById('google-merchantwidget-iframe-wrapper');
+					if (w) {
+						w.style.cssText += ';<?php echo esc_attr( $css ); ?>';
+					}
+				};
+				applyPos();
+				setTimeout(applyPos, 200);
+				setTimeout(applyPos, 1000);
+			};
 			if (s.addEventListener) {
 				s.addEventListener('load', run);
 			} else if (s.attachEvent) {
@@ -77,6 +93,22 @@ final class Shortcodes {
 		</script>
 		<?php
 		return (string) ob_get_clean();
+	}
+
+	private static function wrapper_position_css( $position ) {
+		switch ( $position ) {
+			case 'TOP_LEFT':
+				return 'top:20px !important;left:20px !important;bottom:auto !important;right:auto !important;';
+			case 'TOP_RIGHT':
+				return 'top:20px !important;right:20px !important;bottom:auto !important;left:auto !important;';
+			case 'BOTTOM_LEFT':
+				return 'bottom:20px !important;left:20px !important;top:auto !important;right:auto !important;';
+			case 'INLINE':
+				return '';
+			case 'BOTTOM_RIGHT':
+			default:
+				return 'bottom:20px !important;right:20px !important;top:auto !important;left:auto !important;';
+		}
 	}
 
 	public static function optin( $atts = array() ) {
