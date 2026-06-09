@@ -132,7 +132,7 @@ final class Settings {
 		$count = substr( preg_replace( '/[^0-9,]/', '', $count ), 0, 20 );
 		$out['dev_review_count'] = '' !== $count ? $count : $defaults['dev_review_count'];
 
-		$valid_positions = array( 'BOTTOM_LEFT', 'BOTTOM_RIGHT', 'TOP_LEFT', 'TOP_RIGHT', 'INLINE' );
+		$valid_positions = array( 'BOTTOM_LEFT', 'BOTTOM_RIGHT', 'INLINE' );
 		$pos = isset( $input['badge_position'] ) ? sanitize_text_field( $input['badge_position'] ) : $defaults['badge_position'];
 		$out['badge_position'] = in_array( $pos, $valid_positions, true ) ? $pos : $defaults['badge_position'];
 
@@ -214,8 +214,6 @@ final class Settings {
 		$items = array(
 			'BOTTOM_LEFT'  => __( 'Bottom left', 'gm-reviews' ),
 			'BOTTOM_RIGHT' => __( 'Bottom right', 'gm-reviews' ),
-			'TOP_LEFT'     => __( 'Top left', 'gm-reviews' ),
-			'TOP_RIGHT'    => __( 'Top right', 'gm-reviews' ),
 			'INLINE'       => __( 'Inline (shortcode only)', 'gm-reviews' ),
 		);
 		echo '<select name="' . esc_attr( self::OPTION_KEY ) . '[badge_position]">';

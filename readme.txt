@@ -67,8 +67,9 @@ It's in Google Merchant Center. Click the gear icon (top right) and the numeric 
 
 = 1.2.0 =
 * New "Opt-in page targeting" section with URL pattern list (with wildcards) so the opt-in survey can also fire on custom thank-you pages (e.g. FunnelKit).
-* Fix: the Google merchant widget always anchored its iframe at `right: 0` of the wrapper, which made the badge invisible for `BOTTOM_LEFT`, `TOP_LEFT`, and `TOP_RIGHT`. The plugin now injects CSS to anchor the iframe to the correct edge.
+* Fix: the Google merchant widget always anchors its iframe at `right: 0` of the wrapper, which made the badge invisible for `BOTTOM_LEFT`. The plugin now injects CSS to anchor the iframe to the correct edge.
 * Fix: validate opt-in payload before sending to Google. Skip orders with missing email/country/etc. so the survey endpoint doesn't return 400.
+* Removed `TOP_LEFT` and `TOP_RIGHT` from the badge position options. The top positions were never properly supported by Google's widget and have been removed to keep the UI honest.
 
 = 1.1.0 =
 * Dev/preview mode for local & staging sites.

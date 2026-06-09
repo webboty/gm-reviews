@@ -129,10 +129,6 @@ final class Badge {
 
 	private function iframe_position_css( $position ) {
 		switch ( $position ) {
-			case 'TOP_LEFT':
-				return 'left:0 !important;right:auto !important;top:0 !important;bottom:auto !important;';
-			case 'TOP_RIGHT':
-				return 'right:0 !important;left:auto !important;top:0 !important;bottom:auto !important;';
 			case 'BOTTOM_LEFT':
 				return 'left:0 !important;right:auto !important;bottom:0 !important;top:auto !important;';
 			case 'INLINE':
@@ -145,10 +141,6 @@ final class Badge {
 
 	private function wrapper_position_css( $position ) {
 		switch ( $position ) {
-			case 'TOP_LEFT':
-				return 'top:20px !important;left:20px !important;bottom:auto !important;right:auto !important;';
-			case 'TOP_RIGHT':
-				return 'top:20px !important;right:20px !important;bottom:auto !important;left:auto !important;';
 			case 'BOTTOM_LEFT':
 				return 'bottom:20px !important;left:20px !important;top:auto !important;right:auto !important;';
 			case 'INLINE':
@@ -191,10 +183,6 @@ final class Badge {
 	private function dev_position_style( $position ) {
 		$base = 'position:fixed;z-index:2147483000;background:#fff;color:#202124;font:500 14px/1.2 -apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;border-radius:24px;box-shadow:0 2px 8px rgba(0,0,0,.18);padding:8px 14px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;';
 		switch ( $position ) {
-			case 'TOP_LEFT':
-				return $base . 'top:20px;left:20px;';
-			case 'TOP_RIGHT':
-				return $base . 'top:20px;right:20px;';
 			case 'BOTTOM_LEFT':
 				return $base . 'bottom:20px;left:20px;';
 			case 'INLINE':

@@ -102,10 +102,6 @@ final class Shortcodes {
 
 	private static function wrapper_position_css( $position ) {
 		switch ( $position ) {
-			case 'TOP_LEFT':
-				return 'top:20px !important;left:20px !important;bottom:auto !important;right:auto !important;';
-			case 'TOP_RIGHT':
-				return 'top:20px !important;right:20px !important;bottom:auto !important;left:auto !important;';
 			case 'BOTTOM_LEFT':
 				return 'bottom:20px !important;left:20px !important;top:auto !important;right:auto !important;';
 			case 'INLINE':
@@ -118,10 +114,6 @@ final class Shortcodes {
 
 	private static function iframe_position_css( $position ) {
 		switch ( $position ) {
-			case 'TOP_LEFT':
-				return 'left:0 !important;right:auto !important;top:0 !important;bottom:auto !important;';
-			case 'TOP_RIGHT':
-				return 'right:0 !important;left:auto !important;top:0 !important;bottom:auto !important;';
 			case 'BOTTOM_LEFT':
 				return 'left:0 !important;right:auto !important;bottom:0 !important;top:auto !important;';
 			case 'INLINE':
