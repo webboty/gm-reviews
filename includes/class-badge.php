@@ -87,10 +87,12 @@ final class Badge {
 			$config['region'] = $region;
 		}
 
-		$css = $this->wrapper_position_css( $position );
+		$css        = $this->wrapper_position_css( $position );
+		$iframe_css = $this->iframe_position_css( $position );
 		?>
 		<style id="gmr-merchant-widget-position">
 		#google-merchantwidget-iframe-wrapper{<?php echo $css; ?>}
+		#google-merchantwidget-iframe-wrapper iframe{<?php echo $iframe_css; ?>}
 		</style>
 		<script id="gmr-merchant-widget" src="https://www.gstatic.com/shopping/merchant/merchantwidget.js" defer></script>
 		<script>
@@ -103,6 +105,10 @@ final class Badge {
 					var w = document.getElementById('google-merchantwidget-iframe-wrapper');
 					if (w) {
 						w.style.cssText += ';<?php echo esc_attr( $css ); ?>';
+						var f = w.querySelector('iframe');
+						if (f) {
+							f.style.cssText += ';<?php echo esc_attr( $iframe_css ); ?>';
+						}
 					}
 				};
 				applyPos();
@@ -119,6 +125,22 @@ final class Badge {
 		})();
 		</script>
 		<?php
+	}
+
+	private function iframe_position_css( $position ) {
+		switch ( $position ) {
+			case 'TOP_LEFT':
+				return 'left:0 !important;right:auto !important;top:0 !important;bottom:auto !important;';
+			case 'TOP_RIGHT':
+				return 'right:0 !important;left:auto !important;top:0 !important;bottom:auto !important;';
+			case 'BOTTOM_LEFT':
+				return 'left:0 !important;right:auto !important;bottom:0 !important;top:auto !important;';
+			case 'INLINE':
+				return '';
+			case 'BOTTOM_RIGHT':
+			default:
+				return 'right:0 !important;left:auto !important;bottom:0 !important;top:auto !important;';
+		}
 	}
 
 	private function wrapper_position_css( $position ) {

@@ -57,12 +57,14 @@ final class Shortcodes {
 			$config['region'] = $region;
 		}
 
-		$id    = 'gmr-merchant-widget-' . wp_generate_uuid4();
-		$css   = self::wrapper_position_css( $position );
+		$id         = 'gmr-merchant-widget-' . wp_generate_uuid4();
+		$css        = self::wrapper_position_css( $position );
+		$iframe_css = self::iframe_position_css( $position );
 		ob_start();
 		?>
 		<style id="<?php echo esc_attr( $id ); ?>-css">
-		#<?php echo esc_attr( $id ); ?>-wrap{<?php echo $css; ?>}
+		#google-merchantwidget-iframe-wrapper{<?php echo $css; ?>}
+		#google-merchantwidget-iframe-wrapper iframe{<?php echo $iframe_css; ?>}
 		</style>
 		<script id="<?php echo esc_attr( $id ); ?>" src="https://www.gstatic.com/shopping/merchant/merchantwidget.js" defer></script>
 		<script>
@@ -71,11 +73,14 @@ final class Shortcodes {
 			if (!s) return;
 			var run = function(){
 				merchantwidget.start(<?php echo wp_json_encode( $config ); ?>);
-				// Apply our position to the wrapper that merchantwidget.js just created
 				var applyPos = function(){
 					var w = document.getElementById('google-merchantwidget-iframe-wrapper');
 					if (w) {
 						w.style.cssText += ';<?php echo esc_attr( $css ); ?>';
+						var f = w.querySelector('iframe');
+						if (f) {
+							f.style.cssText += ';<?php echo esc_attr( $iframe_css ); ?>';
+						}
 					}
 				};
 				applyPos();
@@ -108,6 +113,22 @@ final class Shortcodes {
 			case 'BOTTOM_RIGHT':
 			default:
 				return 'bottom:20px !important;right:20px !important;top:auto !important;left:auto !important;';
+		}
+	}
+
+	private static function iframe_position_css( $position ) {
+		switch ( $position ) {
+			case 'TOP_LEFT':
+				return 'left:0 !important;right:auto !important;top:0 !important;bottom:auto !important;';
+			case 'TOP_RIGHT':
+				return 'right:0 !important;left:auto !important;top:0 !important;bottom:auto !important;';
+			case 'BOTTOM_LEFT':
+				return 'left:0 !important;right:auto !important;bottom:0 !important;top:auto !important;';
+			case 'INLINE':
+				return '';
+			case 'BOTTOM_RIGHT':
+			default:
+				return 'right:0 !important;left:auto !important;bottom:0 !important;top:auto !important;';
 		}
 	}
 

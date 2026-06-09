@@ -36,11 +36,24 @@ final class Optin {
 		if ( ! $order ) {
 			return;
 		}
-		$email   = $order->get_billing_email();
-		$country = $order->get_shipping_country() ?: $order->get_billing_country();
-		$min     = (int) Settings::get( 'optin_min_delivery' );
-		$max     = (int) Settings::get( 'optin_max_delivery' );
-		$days    = max( $min, $max );
+		$email   = trim( (string) $order->get_billing_email() );
+		$country = strtoupper( (string) ( $order->get_shipping_country() ?: $order->get_billing_country() ) );
+
+		// Skip if we don't have a valid email or 2-letter country code. Google's
+		// survey trigger endpoint returns 400 Bad Request for any order missing
+		// required fields, so we never even cache these.
+		if ( '' === $email || ! is_email( $email ) ) {
+			$this->log_skip( $order_id, 'store: invalid email: "' . $email . '"', array() );
+			return;
+		}
+		if ( ! preg_match( '/^[A-Z]{2}$/', $country ) ) {
+			$this->log_skip( $order_id, 'store: invalid country: "' . $country . '"', array() );
+			return;
+		}
+
+		$min  = (int) Settings::get( 'optin_min_delivery' );
+		$max  = (int) Settings::get( 'optin_max_delivery' );
+		$days = max( $min, $max );
 		if ( $days <= 0 ) {
 			$days = 14;
 		}
@@ -68,8 +81,8 @@ final class Optin {
 
 		set_transient( 'gmr_optin_' . $order_id, array(
 			'order_id'    => (string) $order_id,
-			'email'       => (string) $email,
-			'country'     => (string) $country,
+			'email'       => $email,
+			'country'     => $country,
 			'eta'         => $eta,
 			'gtins'       => $gtins,
 		), DAY_IN_SECONDS );
@@ -110,6 +123,29 @@ final class Optin {
 					$payload['estimated_delivery_date'] = gmdate( 'Y-m-d', strtotime( '+' . $days . ' days' ) );
 				}
 			}
+
+			// Sanitize: drop the opt-in entirely if required fields are missing/invalid
+			// to avoid Google's 400 Bad Request on the survey trigger endpoint.
+			$required = array( 'order_id', 'email', 'delivery_country', 'estimated_delivery_date' );
+			foreach ( $required as $field ) {
+				if ( ! isset( $payload[ $field ] ) || '' === (string) $payload[ $field ] ) {
+					$this->log_skip( $order_id, 'missing field: ' . $field, $payload );
+					return null;
+				}
+			}
+			if ( ! is_email( $payload['email'] ) ) {
+				$this->log_skip( $order_id, 'invalid email', $payload );
+				return null;
+			}
+			if ( ! preg_match( '/^[A-Z]{2}$/', strtoupper( (string) $payload['delivery_country'] ) ) ) {
+				$this->log_skip( $order_id, 'invalid country code: ' . $payload['delivery_country'], $payload );
+				return null;
+			}
+			$payload['delivery_country'] = strtoupper( $payload['delivery_country'] );
+			if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', (string) $payload['estimated_delivery_date'] ) ) {
+				$this->log_skip( $order_id, 'invalid date: ' . $payload['estimated_delivery_date'], $payload );
+				return null;
+			}
 		} else {
 			$payload['order_id']                = 'ORDER_ID';
 			$payload['email']                   = 'CUSTOMER_EMAIL';
@@ -118,6 +154,12 @@ final class Optin {
 		}
 
 		return $payload;
+	}
+
+	private function log_skip( $order_id, $reason, $payload ) {
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+			error_log( sprintf( '[GM Reviews] Skipping opt-in for order %d: %s. Payload: %s', $order_id, $reason, wp_json_encode( $payload ) ) );
+		}
 	}
 
 	public function render( $order_id = null ) {
