@@ -28,6 +28,7 @@ final class Settings {
 			'optin_min_delivery'    => 7,
 			'optin_max_delivery'    => 60,
 			'optin_include_gtins'   => 0,
+			'optin_url_patterns'    => '',
 			'dev_mode'              => 0,
 			'dev_rating'            => '4.7',
 			'dev_review_count'      => '1,264',
@@ -87,6 +88,17 @@ final class Settings {
 		add_settings_field( 'optin_include_gtins', __( 'Include product GTINs', 'gm-reviews' ), array( $this, 'field_optin_include_gtins' ), self::PAGE_SLUG, 'gmr_main' );
 
 		add_settings_section(
+			'gmr_optin_targeting',
+			__( 'Opt-in page targeting', 'gm-reviews' ),
+			function () {
+				echo '<p>' . esc_html__( 'By default the opt-in survey is auto-injected on the WooCommerce order-received (thank-you) page. To also fire it on other pages (e.g. a custom FunnelKit thank-you template), add one URL path per line below. The match is a case-insensitive starts-with check on the request path.', 'gm-reviews' ) . '</p>';
+			},
+			self::PAGE_SLUG
+		);
+
+		add_settings_field( 'optin_url_patterns', __( 'Extra opt-in URL paths', 'gm-reviews' ), array( $this, 'field_optin_url_patterns' ), self::PAGE_SLUG, 'gmr_optin_targeting' );
+
+		add_settings_section(
 			'gmr_dev',
 			__( 'Development & preview', 'gm-reviews' ),
 			function () {
@@ -129,6 +141,23 @@ final class Settings {
 
 		$out['optin_min_delivery'] = max( 0, (int) ( isset( $input['optin_min_delivery'] ) ? $input['optin_min_delivery'] : $defaults['optin_min_delivery'] ) );
 		$out['optin_max_delivery'] = max( $out['optin_min_delivery'], (int) ( isset( $input['optin_max_delivery'] ) ? $input['optin_max_delivery'] : $defaults['optin_max_delivery'] ) );
+
+		// URL patterns: one per line, allow wildcards (* and ?). Limit to 50 lines, 200 chars each.
+		$raw_patterns = isset( $input['optin_url_patterns'] ) ? (string) $input['optin_url_patterns'] : '';
+		$lines        = preg_split( '/\r\n|\r|\n/', $raw_patterns );
+		$clean        = array();
+		foreach ( $lines as $line ) {
+			$line = trim( $line );
+			if ( '' === $line ) {
+				continue;
+			}
+			$line = substr( $line, 0, 200 );
+			$clean[] = $line;
+			if ( count( $clean ) >= 50 ) {
+				break;
+			}
+		}
+		$out['optin_url_patterns'] = implode( "\n", $clean );
 
 		add_settings_error( 'gmr_settings', 'gmr_settings_saved', __( 'Google Reviews settings saved.', 'gm-reviews' ), 'updated' );
 
@@ -234,6 +263,16 @@ final class Settings {
 			checked( 1, $val, false ),
 			esc_html__( 'Send product GTINs to Google in the opt-in payload (recommended for product reviews).', 'gm-reviews' )
 		);
+	}
+
+	public function field_optin_url_patterns() {
+		$val = (string) self::get( 'optin_url_patterns' );
+		printf(
+			'<textarea id="gmr_optin_url_patterns" name="%1$s[optin_url_patterns]" rows="6" cols="60" class="large-text code" placeholder="/checkout/order-received/&#10;/thank-you/&#10;/funnelkit-thank-you/*">%2$s</textarea>',
+			esc_attr( self::OPTION_KEY ),
+			esc_textarea( $val )
+		);
+		echo '<p class="description">' . esc_html__( 'One URL path per line. The match is a case-insensitive starts-with check on the current request path. Use * as a wildcard. Example: /thank-you/ matches /thank-you/, /thank-you/custom/ etc.', 'gm-reviews' ) . '</p>';
 	}
 
 	public function field_dev_mode() {

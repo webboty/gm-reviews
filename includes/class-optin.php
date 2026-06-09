@@ -21,6 +21,65 @@ final class Optin {
 	public function register() {
 		add_action( 'woocommerce_thankyou', array( $this, 'auto_render' ), 20 );
 		add_action( 'woocommerce_order_completed', array( $this, 'store_optin_payload' ) );
+
+		// Also auto-fire on any URL matching the configured opt-in URL patterns
+		// (e.g. a custom FunnelKit thank-you page that is not a WC endpoint).
+		add_action( 'wp_footer', array( $this, 'maybe_auto_render_by_url' ), 5 );
+	}
+
+	public function maybe_auto_render_by_url() {
+		if ( is_admin() ) {
+			return;
+		}
+		if ( $this->auto_rendered ) {
+			return;
+		}
+		if ( ! self::current_url_matches_patterns() ) {
+			return;
+		}
+		$this->auto_rendered = true;
+		echo $this->render( null );
+	}
+
+	public static function current_url_matches_patterns() {
+		$raw = (string) Settings::get( 'optin_url_patterns' );
+		if ( '' === trim( $raw ) ) {
+			return false;
+		}
+		$path = self::current_request_path();
+		if ( '' === $path ) {
+			return false;
+		}
+		$path_lower = strtolower( $path );
+		$lines = preg_split( '/\r\n|\r|\n/', $raw );
+		foreach ( $lines as $line ) {
+			$line = trim( $line );
+			if ( '' === $line ) {
+				continue;
+			}
+			if ( self::path_matches_pattern( $path_lower, strtolower( $line ) ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static function current_request_path() {
+		if ( ! isset( $_SERVER['REQUEST_URI'] ) ) {
+			return '';
+		}
+		$uri = (string) $_SERVER['REQUEST_URI'];
+		$qpos = strpos( $uri, '?' );
+		if ( false !== $qpos ) {
+			$uri = substr( $uri, 0, $qpos );
+		}
+		return '/' . ltrim( $uri, '/' );
+	}
+
+	private static function path_matches_pattern( $path, $pattern ) {
+		// Quote regex special chars except * (any chars) and ? (single char).
+		$regex = '#^' . str_replace( array( '\\*', '\\?' ), array( '.*', '.' ), preg_quote( $pattern, '#' ) ) . '#';
+		return (bool) preg_match( $regex, $path );
 	}
 
 	public function auto_render( $order_id ) {
