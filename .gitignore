@@ -1,0 +1,21 @@
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Node (in case build tooling is added later)
+node_modules/
+package-lock.json
+
+# Build artifacts
+/build/
+/dist/
+
+# Logs
+*.log
+
+# Local env
+.env
+.env.local
